@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mobile App Delivery"
+  short_description: "Build and verify mobile apps from brief to release"
+  default_prompt: "Use $mobile-app-delivery to implement this mobile app from its project brief, verify the user journeys, and prepare supported release builds."

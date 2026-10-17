@@ -1,0 +1,16 @@
+# Development caches, local credentials and generated build outputs
+node_modules/
+server/dist/
+server/coverage/
+server/src/generated/
+server/.env
+server/.env.*
+!server/.env.example
+skill-drafts/.validation-deps/
+*.log
+.vscode/
+
+# Private plans and prompts - never commit to git
+plan.txt
+postmvp_plan.txt
+prompt.txt
