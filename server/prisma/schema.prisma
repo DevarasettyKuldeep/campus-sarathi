@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String           @id @default(uuid()) @db.Uuid
+  googleSubject   String           @unique @map("google_subject") @db.VarChar(255)
+  email           String           @unique @db.VarChar(320)
+  displayName     String           @map("display_name") @db.VarChar(200)
+  emailVerifiedAt DateTime         @map("email_verified_at") @db.Timestamptz(3)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  profile         AcademicProfile?
+  sessions        Session[]
+  consentRecords  ConsentRecord[]
+  profileSyncReceipts ProfileSyncReceipt[]
+
+  @@map("users")
+}
+
+model AcademicProfile {
+  userId         String   @id @map("user_id") @db.Uuid
+  programme      String   @db.VarChar(200)
+  semesterNumber Int      @map("semester_number")
+  semesterStart  DateTime @map("semester_start") @db.Date
+  semesterEnd    DateTime @map("semester_end") @db.Date
+  timezone       String   @default("Asia/Kolkata") @db.VarChar(64)
+  revision       Int      @default(1)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("academic_profiles")
+}
+
+model Session {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  familyId    String    @map("family_id") @db.Uuid
+  refreshHash Bytes     @unique @map("refresh_hash")
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, familyId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+enum ConsentPurpose {
+  ACADEMIC_PROCESSING
+  GEMINI_PROCESSING
+}
+
+model ConsentRecord {
+  id            String         @id @default(uuid()) @db.Uuid
+  sequence      BigInt         @unique @default(autoincrement())
+  userId        String         @map("user_id") @db.Uuid
+  purpose       ConsentPurpose
+  noticeVersion String         @map("notice_version") @db.VarChar(100)
+  granted       Boolean
+  eventAt       DateTime       @default(now()) @map("event_at") @db.Timestamptz(3)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, sequence])
+  @@map("consent_records")
+}
+
+model ProfileSyncReceipt {
+  userId String @map("user_id") @db.Uuid
+  operationId String @map("operation_id") @db.Uuid
+  payloadHash Bytes @map("payload_hash")
+  result Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, operationId])
+  @@map("profile_sync_receipts")
+}
