@@ -12,6 +12,7 @@ import {
   sortPendingAssignments,
   getTodayClasses,
 } from './academic_calculator.js';
+import type { AcademicService } from '../academic/service.js';
 
 export const chatRequestSchema = z.strictObject({
   clientMessageId: z.string().min(1).max(100),
@@ -113,7 +114,8 @@ export class InMemoryAiRepository implements AiRepository {
 export class AiService {
   constructor(
     private readonly repository: AiRepository = new InMemoryAiRepository(),
-    private readonly clock: () => Date = () => new Date()
+    private readonly clock: () => Date = () => new Date(),
+    private readonly academic?: AcademicService
   ) {}
 
   async chat(session: Session, request: ChatRequest): Promise<ChatResponse> {
@@ -123,7 +125,44 @@ export class AiService {
     }
 
     const { message, clientMessageId } = parsed.data;
-    const context = parsed.data.context ?? {
+    let context = parsed.data.context;
+
+    if (!context && this.academic) {
+      try {
+        const [dbClasses, dbAtt, dbAsgn] = await Promise.all([
+          this.academic.listClasses(session),
+          this.academic.listAttendance(session),
+          this.academic.listAssignments(session),
+        ]);
+        context = {
+          classes: dbClasses.map(c => ({
+            id: c.id,
+            subject: c.subjectName,
+            weekday: c.weekday,
+            startMinute: c.startMinute,
+            endMinute: c.endMinute,
+            room: c.room,
+          })),
+          attendance: dbAtt.map(a => ({
+            subject: a.subjectName,
+            attended: a.attended,
+            conducted: a.conducted,
+            minimumPercentage: a.minimumPercentage ?? undefined,
+          })),
+          assignments: dbAsgn.map(as => ({
+            id: as.id,
+            title: as.title,
+            subject: as.subjectName,
+            dueAt: as.dueAt,
+            complete: as.completed,
+          })),
+        };
+      } catch {
+        // Fall back gracefully if academic storage is unconsented or offline
+      }
+    }
+
+    context ??= {
       assignments: [],
       classes: [],
       attendance: [],

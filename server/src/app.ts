@@ -10,6 +10,8 @@ import type { ProfileService } from './modules/profile/service.js';
 import { registerProfileRoutes } from './modules/profile/routes.js';
 import type { AiService } from './modules/ai/service.js';
 import { registerAiRoutes } from './modules/ai/routes.js';
+import type { AcademicService } from './modules/academic/service.js';
+import { registerAcademicRoutes } from './modules/academic/routes.js';
 
 export interface AppOptions {
   config: Environment;
@@ -18,9 +20,10 @@ export interface AppOptions {
   auth?: AuthService;
   profiles?: ProfileService;
   ai?: AiService;
+  academic?: AcademicService;
 }
 
-export async function buildApp({ config, readiness, auth, profiles, ai }: AppOptions) {
+export async function buildApp({ config, readiness, auth, profiles, ai, academic }: AppOptions) {
   const app = Fastify({
     logger: config.LOG_LEVEL === 'silent' ? false : {
       level: config.LOG_LEVEL,
@@ -88,6 +91,7 @@ export async function buildApp({ config, readiness, auth, profiles, ai }: AppOpt
   });
   registerAuthRoutes(app, auth);
   registerProfileRoutes(app, auth, profiles, config.NODE_ENV === 'production');
+  registerAcademicRoutes(app, auth, academic, config.NODE_ENV === 'production');
   registerAiRoutes(app, auth, ai);
   return app;
 }
