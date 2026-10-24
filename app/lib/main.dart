@@ -379,14 +379,17 @@ class AcademicScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DefaultTabController(
-    length: 3,
+    length: 4,
     child: Column(
       children: [
         const TabBar(
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: [
             Tab(text: 'Assignments'),
             Tab(text: 'Timetable'),
             Tab(text: 'Attendance'),
+            Tab(text: 'Announcements'),
           ],
         ),
         Expanded(
@@ -395,6 +398,7 @@ class AcademicScreen extends StatelessWidget {
               _AssignmentsTab(store: store),
               _TimetableTab(store: store),
               _AttendanceTab(store: store),
+              _AnnouncementsTab(store: store),
             ],
           ),
         ),
@@ -522,6 +526,78 @@ class _AttendanceTab extends StatelessWidget {
       icon: const Icon(Icons.edit_outlined),
       label: const Text('Attendance'),
     ),
+  );
+}
+
+class _AnnouncementsTab extends StatelessWidget {
+  const _AnnouncementsTab({required this.store});
+  final AcademicStore store;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: store.announcements.isEmpty
+        ? const _EmptyState(
+            icon: Icons.campaign_outlined,
+            text: 'No official announcements available right now.',
+          )
+        : ListView(
+            padding: const EdgeInsets.all(16),
+            children: store.announcements.map((item) {
+              return Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.secondaryContainer,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              item.scope.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.onSecondaryContainer,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            _date(item.publishedAt),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        item.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        item.body,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
   );
 }
 

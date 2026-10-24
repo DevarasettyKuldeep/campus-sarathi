@@ -77,3 +77,50 @@ class AttendanceRecord {
       ? null
       : percentage! < minimumPercentage!;
 }
+
+class AcademicSubject {
+  const AcademicSubject({
+    required this.id,
+    required this.code,
+    required this.name,
+    this.revision = 1,
+  });
+  final String id;
+  final String code;
+  final String name;
+  final int revision;
+}
+
+class AcademicCourse {
+  const AcademicCourse({
+    required this.id,
+    required this.subjectId,
+    required this.semesterLabel,
+    this.credits,
+    this.attendanceThreshold,
+    this.revision = 1,
+  });
+  final String id;
+  final String subjectId;
+  final String semesterLabel;
+  final int? credits;
+  final double? attendanceThreshold;
+  final int revision;
+}
+
+class Announcement {
+  const Announcement({
+    required this.id,
+    required this.scope,
+    required this.title,
+    required this.body,
+    this.originUrl,
+    required this.publishedAt,
+  });
+  final String id;
+  final String scope;
+  final String title;
+  final String body;
+  final String? originUrl;
+  final DateTime publishedAt;
+}

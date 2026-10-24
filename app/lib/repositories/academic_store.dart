@@ -34,6 +34,7 @@ class AcademicStore extends ChangeNotifier {
   final List<Assignment> _assignments = [];
   final List<ClassSession> _classes = [];
   final List<AttendanceRecord> _attendance = [];
+  final List<Announcement> _announcements = [];
   StudentProfile? _profile;
   StudentProfile? get profile => _profile;
   AcademicDatabase get database => _database;
@@ -42,6 +43,13 @@ class AcademicStore extends ChangeNotifier {
   List<Assignment> get assignments => List.unmodifiable(_assignments);
   List<ClassSession> get classes => List.unmodifiable(_classes);
   List<AttendanceRecord> get attendance => List.unmodifiable(_attendance);
+  List<Announcement> get announcements => List.unmodifiable(_announcements);
+
+  void setAnnouncements(List<Announcement> items) {
+    _announcements.clear();
+    _announcements.addAll(items);
+    notifyListeners();
+  }
 
   Future<void> initialize() async {
     if (_ready) return;
@@ -91,6 +99,7 @@ class AcademicStore extends ChangeNotifier {
       _assignments.clear();
       _classes.clear();
       _attendance.clear();
+      _announcements.clear();
       _profile = null;
       _consented = false;
     } finally {
